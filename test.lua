@@ -17,7 +17,7 @@ local verify = function(res, expectedres)
    print("SUCCESS", res, expectedres)
 end
 
-r({host = "localhost", port = 6379}, function(allocator) 
+r({domain = {host = "localhost", port = 6379}}, function(allocator) 
    print("READY")
    local ns_1 = allocator("NAMESPACE1")
    local ns_2 = allocator("OTHERNAMESPACE")

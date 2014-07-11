@@ -235,10 +235,37 @@ local function get_modified_func(com, v, namespace, client)
    return com_func
 end
 
-return function(domain, callback)
-   redis.connect(domain, function(client)
+return function(options, callback)
+   if options.domain then
+      local domain = options.domain 
+
+      redis.connect(domain, function(client)
+         callback(function(namespace)
+
+            local meta = {}
+
+            function meta:__index(key)
+               local com = key:upper()
+
+               local v = all_commands[com]
+
+               if v then 
+                  return get_modified_func(key, v, namespace, client)
+               else
+                  return client[key]
+               end
+            end
+
+            local namespaced_client = {}
+            setmetatable(namespaced_client, meta) 
+
+            return namespaced_client
+         end)
+      end)
+   elseif options.client then
+      local client = options.client
       callback(function(namespace)
-      
+
          local meta = {}
 
          function meta:__index(key)
@@ -258,7 +285,8 @@ return function(domain, callback)
 
          return namespaced_client
       end)
-
-   end)
+   else
+      error("options require client or domain")
+   end
 end
 
